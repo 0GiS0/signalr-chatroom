@@ -107,7 +107,7 @@ public class Chat : Hub
         _cosmosDbService.AddMessageAsync(new Message
         {
             Id = Guid.NewGuid().ToString(),
-            ChatRoomId = "mediaset",
+            ChatRoomId = "chatroom1",
             Date = date,
             UserName = name,
             VideoTime = currentTime,
