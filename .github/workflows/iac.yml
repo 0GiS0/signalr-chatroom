@@ -103,6 +103,13 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
-      - working-directory: Chatroom/
-        run: |           
-          dotnet build
+      - run: |
+          dotnet restore           
+          dotnet build ./Chatroom -c Release
+          dotnet publish ./Chatroom -c Release -o './webapp'
+      - uses: azure/webapps-deploy@v2
+        with: 
+          app-name: classic-sunbeam #This should be an output from Terraform job
+          publish-profile: ${{ secrets.PUBLISH_PROFILE }}
+          package: ./webapp
+
