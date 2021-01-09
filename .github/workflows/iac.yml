@@ -99,4 +99,10 @@ jobs:
     needs: [luis]
     runs-on: ubuntu-latest
     steps:
-      - run: echo 'here is where I deploy my code'
+      - uses: actions/checkout@main
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+      - working-directory: Chatroom/
+        run: |           
+          dotnet build **/*.csproj
