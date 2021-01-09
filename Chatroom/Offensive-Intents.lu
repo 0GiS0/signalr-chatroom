@@ -1,0 +1,34 @@
+
+> LUIS application information
+> !# @app.name = Offensive-Intents
+> !# @app.desc = Trying to detect offensive intentions
+> !# @app.versionId = 0.1
+> !# @app.culture = es-es
+> !# @app.luis_schema_version = 7.0.0
+> !# @app.tokenizerVersion = 1.0.0
+
+
+> # Intent definitions
+
+# None
+
+
+# Offensive
+- habría que matar a todos
+- habría que matar a todos los gitanos y negros
+
+
+> # Entity definitions
+
+
+> # PREBUILT Entity definitions
+
+
+> # Phrase list definitions
+
+
+> # List entities
+
+> # RegEx entities
+
+

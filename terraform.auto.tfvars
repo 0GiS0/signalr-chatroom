@@ -1,0 +1,6 @@
+location = "northeurope"
+luis_app_id = "0013817e-e6e8-4cdd-8b81-33880fed9a9e"
+luis_location = "westeurope"
+cosmosdb_db = "Chats"
+cosmosdb_container = "Messages"
+cosmosdb_partition_key = "/chatroomid"
