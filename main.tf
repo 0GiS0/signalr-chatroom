@@ -163,3 +163,7 @@ resource "azurerm_app_service" "webapp" {
     "ContentModerator:ApiKey"        = azurerm_cognitive_account.content_moderator.primary_access_key
   }
 }
+
+output "app_service_name" {
+  value = azurerm_app_service.webapp.name
+}
