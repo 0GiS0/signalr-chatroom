@@ -91,6 +91,10 @@ jobs:
   luis:
     name: 'LUIS model'
     runs-on: ubuntu-latest
+    steps:
+      - run: echo 'here is where update LUIS'
   deployment:
-    name: 'Deploy code'
+    name: 'Deploy code'    
     runs-on: ubuntu-latest
+    steps:
+      - run: echo 'here is where I deploy my code'
