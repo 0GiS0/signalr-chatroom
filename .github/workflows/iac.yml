@@ -99,7 +99,7 @@ jobs:
       #   run: terraform apply -auto-approve
       - id: tf_output      
         run: | 
-          $output=(terraform output app_service_name)
+          output=$(terraform output app_service_name)
           echo "::set-ouput name=app_service_name::$output"
   luis:
     name: "LUIS model"
