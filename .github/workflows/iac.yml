@@ -86,17 +86,17 @@ jobs:
       # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform Init
         run: terraform init
-      # # Checks that all Terraform configuration files adhere to a canonical format
-      # # - name: Terraform Format
-      # #   run: terraform fmt -check
-      # # Generates an execution plan for Terraform
-      # - name: Terraform Plan
-      #   run: terraform plan
-      #   # On push to main, build or change infrastructure according to Terraform configuration files
-      #   # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-      # - name: Terraform Apply
-      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      #   run: terraform apply -auto-approve
+      # Checks that all Terraform configuration files adhere to a canonical format
+      - name: Terraform Format
+        run: terraform fmt -check
+      # Generates an execution plan for Terraform
+      - name: Terraform Plan
+        run: terraform plan
+        # On push to main, build or change infrastructure according to Terraform configuration files
+        # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve
       - id: tf_output
         run: echo "::set-output name=webapp::$(terraform output -raw app_service_name)"
   luis:
@@ -110,19 +110,19 @@ jobs:
     needs: [terraform, luis]
     runs-on: ubuntu-latest
     steps:
-      # - uses: actions/checkout@main
-      # - uses: actions/setup-dotnet@v1
-      #   with:
-      #     dotnet-version: "3.1.x" # SDK Version to use; x will use the latest version of the 3.1 channel
-      # - run: |
-      #     dotnet restore
-      #     dotnet build ./Chatroom -c Release
-      #     dotnet publish ./Chatroom -c Release -o './webapp'
+      - uses: actions/checkout@main
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "3.1.x" # SDK Version to use; x will use the latest version of the 3.1 channel
+      - run: |
+          dotnet restore
+          dotnet build ./Chatroom -c Release
+          dotnet publish ./Chatroom -c Release -o './webapp'
       - name: Check the value of the terraform output
         run: |
           echo ${{ needs.terraform.outputs.webapp_name }}
-      # - uses: azure/webapps-deploy@v2
-      #   with:
-      #     app-name: ${{ needs.terraform.outputs.webapp_name }} #This should be an output from Terraform job
-      #     publish-profile: ${{ secrets.PUBLISH_PROFILE }}
-      #     package: ./webapp
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ needs.terraform.outputs.webapp_name }} #This should be an output from Terraform job
+          # publish-profile: ${{ secrets.PUBLISH_PROFILE }}
+          package: ./webapp
