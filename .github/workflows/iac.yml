@@ -68,7 +68,7 @@ jobs:
     name: "Terraform"
     runs-on: ubuntu-latest
     outputs:
-      webapp_name: ${{ steps.tf_output.app_service_name }}
+      webapp_name: ${{ steps.tf_output.outputs.app_service_name }}
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
@@ -97,10 +97,10 @@ jobs:
       # - name: Terraform Apply
       #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       #   run: terraform apply -auto-approve
-      - id: tf_output      
-        run: | 
+      - id: tf_output
+        run: |
           output=$(terraform output app_service_name)
-          echo ::set-ouput name=app_service_name::clean-phoenix
+          echo ::set-ouput name=app_service_name::$output
   luis:
     name: "LUIS model"
     needs: [terraform]
@@ -122,7 +122,7 @@ jobs:
       #     dotnet publish ./Chatroom -c Release -o './webapp'
       - name: Check the value of the terraform output
         run: |
-          echo ${{ needs.terraform.outputs.webapp_name }}      
+          echo ${{ needs.terraform.outputs.webapp_name }}
       # - uses: azure/webapps-deploy@v2
       #   with:
       #     app-name: ${{ needs.terraform.outputs.webapp_name }} #This should be an output from Terraform job
