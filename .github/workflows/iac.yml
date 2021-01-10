@@ -51,17 +51,19 @@ on:
   pull_request:
 
 jobs:
-  terraform:
+  job1:
     runs-on: ubuntu-latest
     outputs:
-      app_service_name: ${{ steps.tf_output.outputs.app_service_name }}
+      url: ${{ steps.step1.outputs.url }} # map step output to job output
     steps:
-      - run: echo "::set-output name=app_service_name::this is a test"
-  deployment:
+      - id: step1
+        name: send url to other job
+        run: echo "::set-output name=url::https://google.com"
+  job2:
     runs-on: ubuntu-latest
-    needs: terraform
+    needs: job1
     steps:
-      - run: echo ${{ needs.terraform.outputs.app_service_name }}
+      - run: echo ${{ needs.job1.outputs.url }} # grab job output here
   # terraform:
   #   name: "Terraform"
   #   runs-on: ubuntu-latest
