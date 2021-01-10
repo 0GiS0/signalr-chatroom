@@ -118,11 +118,13 @@ jobs:
           dotnet restore
           dotnet build ./Chatroom -c Release
           dotnet publish ./Chatroom -c Release -o './webapp'
-      - name: Check the value of the terraform output
-        run: |
-          echo ${{ needs.terraform.outputs.webapp_name }}
+      # - name: Check the value of the terraform output
+      #   run: |
+      #     echo ${{ needs.terraform.outputs.webapp_name }}
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ needs.terraform.outputs.webapp_name }} #This should be an output from Terraform job
-          # publish-profile: ${{ secrets.PUBLISH_PROFILE }}
           package: ./webapp
