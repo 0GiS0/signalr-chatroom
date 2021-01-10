@@ -100,7 +100,7 @@ jobs:
       - id: tf_output      
         run: | 
           output=$(terraform output app_service_name)
-          echo "::set-ouput name=app_service_name::$output"
+          echo ::set-ouput name=app_service_name::$output
   luis:
     name: "LUIS model"
     needs: [terraform]
