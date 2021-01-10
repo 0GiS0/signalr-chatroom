@@ -98,7 +98,7 @@ jobs:
       #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       #   run: terraform apply -auto-approve
       - id: tf_output
-        run: echo "::set-output name=url::https://google.com"
+        run: echo "::set-output name=url::$(terraform output app_service_name)"
   luis:
     name: "LUIS model"
     needs: [terraform]
