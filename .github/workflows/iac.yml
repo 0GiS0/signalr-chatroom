@@ -117,27 +117,27 @@ jobs:
         uses: actions/checkout@v2
       - uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}     
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - uses: actions/setup-node@v1
         with:
           node-version: "12.x"
       - name: Install @microsoft/botframework-cli
         run: |
-          npm i -g @microsoft/botframework-cli      
+          npm i -g @microsoft/botframework-cli
       - id: luis_app
         name: Create a LUIS app
-        run: | 
+        run: |
           response=$(bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --versionId=0.1 --culture es-es --json)
           appId=$(echo "$response" | jq '.id' | xargs)
           echo $appId
           echo "::set-output name=appid::$appId"
-      - name: Assign LUIS Azure Prediction resource to application          
-        run: |          
+      - name: Assign LUIS Azure Prediction resource to application
+        run: |
           bf luis:application:assignazureaccount --azureSubscriptionId $(az account show --query id -o tsv) --appId ${{ steps.luis_app.outputs.appid }} --accountName ${{ needs.terraform.outputs.webapp_name }}-luis-prediction --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --resourceGroup ${{ needs.terraform.outputs.webapp_name }} --armToken $(az account get-access-token --query accessToken -o tsv)
       - name: Add model to the LUIS app
         run: |
           bf luis:convert -i $LU_FILE -o ./model.json --name ${{ needs.terraform.outputs.webapp_name }} --versionid 0.1
-          bf luis:version:import --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json
+          bf luis:version:import --appId ${{ steps.luis_app.outputs.appid }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
