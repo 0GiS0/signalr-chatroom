@@ -44,6 +44,9 @@
 
 name: "Terraform"
 
+env:
+  LU_FILE: ./Chatroom/Offensive-Intents.lu  
+
 on:
   push:
     branches:
@@ -104,7 +107,42 @@ jobs:
     needs: [terraform]
     runs-on: ubuntu-latest
     steps:
-      - run: echo 'here is where update LUIS'
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.3
+        with:
+          versionSpec: '5.2.x'
+      - name: Use GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.3
+      - name: luisAppVersion env
+        run: echo "::set-env name=luisAppVersion::$GitVersion_SemVer"
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Get LUIS authoring key
+        run: |
+          keya=$(az cognitiveservices account keys list --name $AzureLuisAuthoringResourceName --resource-group $AzureResourceGroup --query "key1" | xargs)
+          echo "::set-env name=LUISAuthoringKey::$keya"
+          echo "::add-mask::$keya"
+      - name: Get LUIS prediction key
+        run: |
+          keyp=$(az cognitiveservices account keys list --name $AzureLuisPredictionResourceName --resource-group $AzureResourceGroup --query "key1" | xargs)
+          echo "::set-env name=LUISPredictionKey::$keyp"
+          echo "::add-mask::$keyp"
+      - name: Get LUIS authoring endpoint
+        run: |
+          az cognitiveservices account show --name $AzureLuisAuthoringResourceName --resource-group $AzureResourceGroup --query "properties.endpoint" | \
+          xargs -I {} echo "::set-env name=luisAuthoringEndpoint::{}"
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Bypass botframework-cli telemetry prompts, enable telemetry collection - set to false to disable telemetry collection
+        run: echo "::set-env name=BF_CLI_TELEMETRY::true"
+      - name: Install @microsoft/botframework-cli
+        run: |
+          npm i -g @microsoft/botframework-cli
+      - name: Ludown to LUIS model
+        run: bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid $luisAppVersion
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
