@@ -126,6 +126,12 @@ jobs:
       - name: Install @microsoft/botframework-cli
         run: |
           npm i -g @microsoft/botframework-cli
+      - name: Get the App Id if the LUIS app already exists
+        run: |
+          bf luis:application:list --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} | \
+          jq -c '.[] | select(.name | . and contains('\"${{ needs.terraform.outputs.webapp_name }}\"')) | .id' | \
+          xargs -I {} echo "::set-env name=AppId::{}"
+          echo "Found LUIS app: $AppId"
       - id: luis_app
         name: Create a LUIS app
         run: |
@@ -137,8 +143,8 @@ jobs:
           bf luis:application:assignazureaccount --azureSubscriptionId $(az account show --query id -o tsv) --appId ${{ steps.luis_app.outputs.appid }} --accountName ${{ needs.terraform.outputs.webapp_name }}-luis-prediction --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --resourceGroup ${{ needs.terraform.outputs.webapp_name }} --armToken $(az account get-access-token --query accessToken -o tsv)
       - name: Add model to the LUIS app
         run: |
-          bf luis:convert -i $LU_FILE -o ./model.json --name ${{ needs.terraform.outputs.webapp_name }} --versionId 0.1
-          bf luis:version:import --appId ${{ steps.luis_app.outputs.appid }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json
+          bf luis:convert -i $LU_FILE -o ./model.json --name ${{ needs.terraform.outputs.webapp_name }}
+          bf luis:version:import --appId ${{ steps.luis_app.outputs.appid }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json --versionId 0.1
       - name: Train luis
         run: bf luis:train:run --appId ${{ steps.luis_app.outputs.appid }} --versionId 0.1 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --wait
       - name: Publish luis
