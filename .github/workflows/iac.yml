@@ -113,11 +113,13 @@ jobs:
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Get LUIS authoring key
+      - id: luis_authoring
+        name: Get LUIS authoring key
         run: |
           keya=$(az cognitiveservices account keys list --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "key1" | xargs)
           echo "::set-output name=luisauthoringkey::$keya"
-      - name: Get LUIS prediction key
+      - id: luis_prediction
+        name: Get LUIS prediction key
         run: |
           keyp=$(az cognitiveservices account keys list --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "key1" | xargs)
           echo "::set-output name=predictionkey::$keyp"
@@ -135,6 +137,9 @@ jobs:
         run: | 
           pwd
           bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 1
+      - name: Create a LUIS app
+        run:  bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ steps.luis_authoring.outputs.luisauthoringkey }} --endpoint ${{ steps.luis_prediction.outputs.predictionkey }} --versionId=0.1
+
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
