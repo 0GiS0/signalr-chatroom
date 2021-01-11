@@ -150,13 +150,16 @@ jobs:
       - name: Train luis
         run: bf luis:train:run --appId ${{ steps.luis_app.outputs.appid }} --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --wait
       - name: Publish luis
+        # run: |
+        #   curl POST $POSTurl \
+        #   -H "Content-Type: application/json" \
+        #   -H "Ocp-Apim-Subscription-Key: ${{ needs.terraform.outputs.luis_key }}" \
+        #   --data-ascii "{'versionId': '0.2', 'directVersionPublish': true}"
         run: |
-          curl POST $POSTurl \
-          -H "Content-Type: application/json" \
-          -H "Ocp-Apim-Subscription-Key: ${{ needs.terraform.outputs.luis_key }}" \
-          --data-ascii "{'versionId': '0.2', 'directVersionPublish': true}"
-        env:
-          POSTurl: ${{ needs.terraform.outputs.luis_auth_endpoint }}luis/authoring/v3.0-preview/apps/${{ steps.luis_app.outputs.appid }}/publish
+          bf luis:application:publish --appId ${{ steps.luis_app.outputs.appid }} --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}
+
+        # env:
+          # POSTurl: ${{ needs.terraform.outputs.luis_auth_endpoint }}luis/authoring/v3.0-preview/apps/${{ steps.luis_app.outputs.appid }}/publish
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
