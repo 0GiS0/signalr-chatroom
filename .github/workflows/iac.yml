@@ -124,11 +124,11 @@ jobs:
       - name: Get LUIS authoring key
         run: |
           keya=$(az cognitiveservices account keys list --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "key1" | xargs)
-          run: echo "::set-output name=luisauthoringkey::$keya"
+          echo "::set-output name=luisauthoringkey::$keya"
       - name: Get LUIS prediction key
         run: |
           keyp=$(az cognitiveservices account keys list --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "key1" | xargs)
-          run: echo "::set-output name=predictionkey::$keyp"
+          echo "::set-output name=predictionkey::$keyp"
       - name: Get LUIS authoring endpoint
         run: |
           endpoint=$(az cognitiveservices account show --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "properties.endpoint" | xargs -I {})
