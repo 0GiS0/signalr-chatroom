@@ -13,12 +13,10 @@ npm i -g @microsoft/botframework-cli
 bf luis:application:create --name distinct-cow --subscriptionKey 06951862f73640408fb795626b4650fa --endpoint https://westeurope.api.cognitive.microsoft.com/ --versionId=0.1 --culture es-es
 
 #3. Assign the prediction key
-bf luis:application:assignazureaccount --help
-token=$(az account get-access-token --query accessToken -o tsv)
+bf luis:application:assignazureaccount --azureSubscriptionId ca0cd4ab-5601-489a-9e4b-53db45be5503 --appId "0a215ad1-3d7f-430e-ba7d-c2ce37a791ab" --accountName="fitting-skink-luis-prediction" --subscriptionKey f9b3dbe874384d2985db433c32ae3a83 --endpoint https://westeurope.api.cognitive.microsoft.com/ --resourceGroup fitting-skink --armToken $(az account get-access-token --query accessToken -o tsv)
 
-bf luis:application:assignazureaccount --accountName=distinct-cow-luis --appId=e7251917-b57c-4475-9072-1ae953a892e8 \
---subscriptionKey=06951862f73640408fb795626b4650fa \
---azureSubscriptionId=ca0cd4ab-5601-489a-9e4b-53db45be5503  --endpoint=https://westeurope.api.cognitive.microsoft.com/ --resourceGroup=distinct-cow \
---armToken=$token
+#4. Convert the lu file
+bf luis:convert -i Chatroom/Offensive-Intents.lu -o ./model.json --name fitting-skink --versionid 0.1 
 
- bf luis:application:assignazureaccount --azureSubscriptionId ca0cd4ab-5601-489a-9e4b-53db45be5503 --appId "0a215ad1-3d7f-430e-ba7d-c2ce37a791ab" --accountName="fitting-skink-luis-prediction" --subscriptionKey f9b3dbe874384d2985db433c32ae3a83 --endpoint https://westeurope.api.cognitive.microsoft.com/ --resourceGroup fitting-skink --armToken $(az account get-access-token --query accessToken -o tsv)
+#5. Import the model.json into the LUIS app
+bf luis:application:import --subscriptionKey f9b3dbe874384d2985db433c32ae3a83 --endpoint https://westeurope.api.cognitive.microsoft.com/  --in model.json --json
