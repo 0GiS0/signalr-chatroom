@@ -123,7 +123,8 @@ jobs:
         run: |
           keyp=$(az cognitiveservices account keys list --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "key1" | xargs)
           echo "::set-output name=predictionkey::$keyp"
-      - name: Get LUIS authoring endpoint
+      - id: luis_endpoint
+        name: Get LUIS authoring endpoint
         run: |
           endpoint=$(az cognitiveservices account show --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "properties.endpoint" | xargs -I {})
           echo "::set-output name=endpoint::$endpoint"
@@ -138,7 +139,7 @@ jobs:
           pwd
           bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 1
       - name: Create a LUIS app
-        run:  bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ steps.luis_authoring.outputs.luisauthoringkey }} --endpoint ${{ steps.luis_prediction.outputs.predictionkey }} --versionId=0.1
+        run:  bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ steps.luis_authoring.outputs.luisauthoringkey }} --endpoint ${{ steps.luis_endpoint.outputs.endpoint }} --versionId=0.1
 
   deployment:
     name: "Deploy code"
@@ -148,14 +149,11 @@ jobs:
       - uses: actions/checkout@main
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "3.1.x" # SDK Version to use; x will use the latest version of the 3.1 channel
+          dotnet-version: "3.1.x"
       - run: |
           dotnet restore
           dotnet build ./Chatroom -c Release
           dotnet publish ./Chatroom -c Release -o './webapp'
-      # - name: Check the value of the terraform output
-      #   run: |
-      #     echo ${{ needs.terraform.outputs.webapp_name }}
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
