@@ -107,17 +107,9 @@ jobs:
     needs: [terraform]
     runs-on: ubuntu-latest
     steps:
-      # - name: Install GitVersion
-      #   uses: gittools/actions/gitversion/setup@v0.9.3
-      #   with:
-      #     versionSpec: '5.2.x'
-      # - name: Use GitVersion
-      #   id: gitversion
-      #   uses: gittools/actions/gitversion/execute@v0.9.3
-      # - name: luisAppVersion env
-      #   id: luis
-      #   # run: echo "::set-env name=luisAppVersion::$GitVersion_SemVer"
-      #   run: echo "::set-output name=version::$GitVersion_SemVer"
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout
+        uses: actions/checkout@v2
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -140,7 +132,9 @@ jobs:
         run: |
           npm i -g @microsoft/botframework-cli
       - name: Ludown to LUIS model
-        run: bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 1
+        run: | 
+          pwd
+          bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 1
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
