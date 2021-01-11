@@ -9,6 +9,10 @@ az ad sp create-for-rbac --name "gis-github-actions" \
 #1. Install Bot Framework CLI
 npm i -g @microsoft/botframework-cli
 
+#. Check if the app exists
+bf luis:application:list --subscriptionKey f9b3dbe874384d2985db433c32ae3a83 --endpoint https://westeurope.api.cognitive.microsoft.com/ | jq -c '.[] | select(.name | . and contains('\"fitting-skink\"')) | .id'
+
+
 #2. Create LUIS app
 bf luis:application:create --name distinct-cow --subscriptionKey 06951862f73640408fb795626b4650fa --endpoint https://westeurope.api.cognitive.microsoft.com/ --versionId=0.1 --culture es-es
 
