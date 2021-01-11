@@ -127,13 +127,13 @@ jobs:
       - id: luis_app
         name: Create a LUIS app
         run: | 
-          response=$(bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --versionId=0.1)
+          response=$(bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --versionId=0.1 --json)
           appId=$(echo "$response" | jq '.id' | xargs)
+          echo $appId
           echo "::set-output name=appid::$appId"
       - name: Assign LUIS Azure Prediction resource to application          
-        run: |
-          subscriptionId=$(az account show --query id -o tsv)
-          bf luis:application:assignazureaccount --azureSubscriptionId $subscriptionId --appId ${{ steps.luis_app.outputs.appid }} --accountName ${{ needs.terraform.outputs.webapp_name }}-luis-prediction --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --resourceGroup ${{ needs.terraform.outputs.webapp_name }} --armToken $(az account get-access-token --query accessToken -o tsv)
+        run: |          
+          bf luis:application:assignazureaccount --azureSubscriptionId $(az account show --query id -o tsv) --appId ${{ steps.luis_app.outputs.appid }} --accountName ${{ needs.terraform.outputs.webapp_name }}-luis-prediction --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --resourceGroup ${{ needs.terraform.outputs.webapp_name }} --armToken $(az account get-access-token --query accessToken -o tsv)
       - name: Add model to the LUIS app
         run: |
           bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 0.1

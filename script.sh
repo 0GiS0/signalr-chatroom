@@ -20,3 +20,5 @@ bf luis:application:assignazureaccount --accountName=distinct-cow-luis --appId=e
 --subscriptionKey=06951862f73640408fb795626b4650fa \
 --azureSubscriptionId=ca0cd4ab-5601-489a-9e4b-53db45be5503  --endpoint=https://westeurope.api.cognitive.microsoft.com/ --resourceGroup=distinct-cow \
 --armToken=$token
+
+ bf luis:application:assignazureaccount --azureSubscriptionId ca0cd4ab-5601-489a-9e4b-53db45be5503 --appId "0a215ad1-3d7f-430e-ba7d-c2ce37a791ab" --accountName="fitting-skink-luis-prediction" --subscriptionKey f9b3dbe874384d2985db433c32ae3a83 --endpoint https://westeurope.api.cognitive.microsoft.com/ --resourceGroup fitting-skink --armToken $(az account get-access-token --query accessToken -o tsv)
