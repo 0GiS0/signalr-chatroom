@@ -111,6 +111,8 @@ jobs:
     name: "LUIS model"
     needs: [terraform]
     runs-on: ubuntu-latest
+    outputs:
+      appid: ${{ steps.luis_app.outputs.appid }}
     steps:
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout
@@ -129,7 +131,6 @@ jobs:
         run: |
           response=$(bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --versionId=0.1 --culture es-es --json)
           appId=$(echo "$response" | jq '.id' | xargs)
-          echo $appId
           echo "::set-output name=appid::$appId"
       - name: Assign LUIS Azure Prediction resource to application
         run: |
@@ -145,7 +146,7 @@ jobs:
           curl POST $POSTurl \
           -H "Content-Type: application/json" \
           -H "Ocp-Apim-Subscription-Key: ${{ needs.terraform.outputs.luis_key }}" \
-          --data-ascii "{'versionId': '$0.1', 'directVersionPublish': true}"
+          --data-ascii "{'versionId': '0.1', 'directVersionPublish': true}"
         env:
           POSTurl: ${{ needs.terraform.outputs.luis_auth_endpoint }}luis/authoring/v3.0-preview/apps/${{ steps.luis_app.outputs.appid }}/publish
   deployment:
@@ -168,3 +169,4 @@ jobs:
         with:
           app-name: ${{ needs.terraform.outputs.webapp_name }} #This should be an output from Terraform job
           package: ./webapp
+      - run: az webapp config appsettings set -g ${{ needs.terraform.outputs.webapp_name }} -n ${{ needs.terraform.outputs.webapp_name }} --settings LUIS:AppId=${{ needs.luis.outputs.appid }}
