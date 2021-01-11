@@ -127,7 +127,7 @@ resource "azurerm_cognitive_account" "luis_authoring" {
   resource_group_name = azurerm_resource_group.rg.name
   kind                = "LUIS.Authoring"
 
-  sku_name = "S0"
+  sku_name = "F0"
 }
 
 output "luis_authoring_endpoint" {
