@@ -132,12 +132,10 @@ jobs:
       - name: Get LUIS authoring endpoint
         run: |
           endpoint=$(az cognitiveservices account show --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "properties.endpoint" | xargs -I {})
-          run: echo "::set-output name=endpoint::$endpoint"
+          echo "::set-output name=endpoint::$endpoint"
       - uses: actions/setup-node@v1
         with:
           node-version: '12.x'
-      # - name: Bypass botframework-cli telemetry prompts, enable telemetry collection - set to false to disable telemetry collection
-      #   run: echo "::set-env name=BF_CLI_TELEMETRY::true"
       - name: Install @microsoft/botframework-cli
         run: |
           npm i -g @microsoft/botframework-cli
