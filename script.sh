@@ -19,4 +19,6 @@ bf luis:application:assignazureaccount --azureSubscriptionId ca0cd4ab-5601-489a-
 bf luis:convert -i Chatroom/Offensive-Intents.lu -o ./model.json --name fitting-skink --versionid 0.1 
 
 #5. Import the model.json into the LUIS app
+bf luis:version:import --appId 57ee4be6-c6d0-491a-8242-fc35657b58da --subscriptionKey f9b3dbe874384d2985db433c32ae3a83 --endpoint https://westeurope.api.cognitive.microsoft.com/ --in model.json
+
 bf luis:application:import --subscriptionKey f9b3dbe874384d2985db433c32ae3a83 --endpoint https://westeurope.api.cognitive.microsoft.com/  --in model.json --json

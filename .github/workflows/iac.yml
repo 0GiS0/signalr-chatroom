@@ -137,7 +137,7 @@ jobs:
       - name: Add model to the LUIS app
         run: |
           bf luis:convert -i $LU_FILE -o ./model.json --name ${{ needs.terraform.outputs.webapp_name }} --versionid 0.1
-          bf luis:application:import --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json --json
+          bf luis:version:import --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
