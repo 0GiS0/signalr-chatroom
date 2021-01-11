@@ -139,7 +139,7 @@ jobs:
           pwd
           bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 1
       - name: Create a LUIS app
-        run:  bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ steps.luis_authoring.outputs.luisauthoringkey }} --endpoint ${{ steps.luis_endpoint.outputs.endpoint }} --versionId=0.1
+        run:  bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ steps.luis_authoring.outputs.luisauthoringkey }} --endpoint https://westeurope.api.cognitive.microsoft.com/ --versionId=0.1
 
   deployment:
     name: "Deploy code"
