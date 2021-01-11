@@ -136,16 +136,8 @@ jobs:
           bf luis:application:assignazureaccount --azureSubscriptionId $(az account show --query id -o tsv) --appId ${{ steps.luis_app.outputs.appid }} --accountName ${{ needs.terraform.outputs.webapp_name }}-luis-prediction --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --resourceGroup ${{ needs.terraform.outputs.webapp_name }} --armToken $(az account get-access-token --query accessToken -o tsv)
       - name: Add model to the LUIS app
         run: |
-          bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 0.1
-          response=$(bf luis:application:import --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json --json)
-          status=$(echo "$response" | jq '.Status' | xargs)
-          if [ "$status" == "Success" ]
-          then
-            appId=$(echo "$response" | jq '.id' | xargs)
-            echo "::set-env name=LUISAppId::$appId"
-          else
-            exit 1
-          fi
+          bf luis:convert -i $LU_FILE -o ./model.json --name ${{ needs.terraform.outputs.webapp_name }} --versionid 0.1
+          bf luis:application:import --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json --json
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
