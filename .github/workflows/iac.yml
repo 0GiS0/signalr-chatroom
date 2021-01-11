@@ -45,7 +45,7 @@
 name: "Terraform"
 
 env:
-  LU_FILE: Chatroom/Offensive-Intents.lu  
+  LU_FILE: Chatroom/Offensive-Intents.lu
 
 on:
   push:
@@ -72,6 +72,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       webapp_name: ${{ steps.tf_output.outputs.webapp }}
+      luis_auth_endpoint: ${{ steps.tf_output.outputs.luisendpoint }}
+      luis_key: ${{ steps.tf_output.outputs.luiskey }}
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
@@ -101,7 +103,10 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
       - id: tf_output
-        run: echo "::set-output name=webapp::$(terraform output -raw app_service_name)"
+        run: |
+          echo "::set-output name=webapp::$(terraform output -raw app_service_name)"
+          echo "::set-output name=luisendpoint::$(terraform output -raw luis_authoring_endpoint)"
+          echo "::set-output name=luiskey::$(terraform output -raw luis_authoring_key)"
   luis:
     name: "LUIS model"
     needs: [terraform]
@@ -112,34 +117,22 @@ jobs:
         uses: actions/checkout@v2
       - uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - id: luis_authoring
-        name: Get LUIS authoring key
-        run: |
-          keya=$(az cognitiveservices account keys list --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "key1" | xargs)
-          echo "::set-output name=luisauthoringkey::$keya"
-      - id: luis_prediction
-        name: Get LUIS prediction key
-        run: |
-          keyp=$(az cognitiveservices account keys list --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "key1" | xargs)
-          echo "::set-output name=predictionkey::$keyp"
-      - id: luis_endpoint
-        name: Get LUIS authoring endpoint
-        run: |
-          endpoint=$(az cognitiveservices account show --name ${{ needs.terraform.outputs.webapp_name }}-luis --resource-group ${{ needs.terraform.outputs.webapp_name }} --query "properties.endpoint" | xargs -I {})
-          echo "::set-output name=endpoint::$endpoint"
+          creds: ${{ secrets.AZURE_CREDENTIALS }}     
       - uses: actions/setup-node@v1
         with:
-          node-version: '12.x'
+          node-version: "12.x"
       - name: Install @microsoft/botframework-cli
         run: |
-          npm i -g @microsoft/botframework-cli
-      - name: Ludown to LUIS model
+          npm i -g @microsoft/botframework-cli      
+      - id: luis_app
+        name: Create a LUIS app
         run: | 
-          pwd
-          bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid 1
-      - name: Create a LUIS app
-        run:  bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ steps.luis_authoring.outputs.luisauthoringkey }} --endpoint https://westeurope.api.cognitive.microsoft.com/ --versionId=0.1
+          appId=$(bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --versionId=0.1)
+          echo "::set-output name=appid::$appId"
+      - name: Assign LUIS Azure Prediction resource to application          
+        run: |
+          subscriptionId=$(az account show --query id -o tsv)
+          bf luis:application:assignazureaccount --azureSubscriptionId $subscriptionId --appId ${{ steps.luis_app.outputs.appid }} --accountName ${{ needs.terraform.outputs.webapp_name }}-luis-prediction --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --resourceGroup ${{ needs.terraform.outputs.webapp_name }} --armToken $(az account get-access-token --query accessToken -o tsv)
 
   deployment:
     name: "Deploy code"

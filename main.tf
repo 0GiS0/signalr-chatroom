@@ -113,13 +113,31 @@ resource "azurerm_cognitive_account" "content_moderator" {
 
 #LUIS
 resource "azurerm_cognitive_account" "luis" {
-  name                = "${random_pet.service.id}-luis"
+  name                = "${random_pet.service.id}-luis-prediction"
   location            = var.luis_location
   resource_group_name = azurerm_resource_group.rg.name
   kind                = "LUIS"
 
   sku_name = "S0"
 }
+
+resource "azurerm_cognitive_account" "luis_authoring" {
+  name                = "${random_pet.service.id}-luis-authoring"
+  location            = var.luis_location
+  resource_group_name = azurerm_resource_group.rg.name
+  kind                = "LUIS.Authoring"
+
+  sku_name = "S0"
+}
+
+output "luis_authoring_endpoint" {
+  value = azurerm_cognitive_account.luis_authoring.endpoint
+}
+
+output "luis_authoring_key" {
+  value = azurerm_cognitive_account.luis_authoring.primary_access_key
+}
+
 
 #Application Insights
 resource "azurerm_application_insights" "appinsights" {
@@ -167,3 +185,4 @@ resource "azurerm_app_service" "webapp" {
 output "app_service_name" {
   value = azurerm_app_service.webapp.name
 }
+
