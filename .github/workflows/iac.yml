@@ -134,6 +134,7 @@ jobs:
           echo "Found LUIS app: $AppId"
       - id: luis_app
         name: Create a LUIS app
+        # if: ${{ env.AppId != '' }}
         run: |
           response=$(bf luis:application:create --name ${{ needs.terraform.outputs.webapp_name }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --versionId=0.1 --culture es-es --json)
           appId=$(echo "$response" | jq '.id' | xargs)
@@ -144,7 +145,8 @@ jobs:
       - name: Add model to the LUIS app
         run: |
           bf luis:convert -i $LU_FILE -o ./model.json --name ${{ needs.terraform.outputs.webapp_name }}
-          bf luis:version:import --appId ${{ steps.luis_app.outputs.appid }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json --versionId 0.1
+          cat ./model.json
+          bf luis:version:import --appId ${{ steps.luis_app.outputs.appid }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json
       - name: Train luis
         run: bf luis:train:run --appId ${{ steps.luis_app.outputs.appid }} --versionId 0.1 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --wait
       - name: Publish luis
