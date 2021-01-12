@@ -129,7 +129,7 @@ jobs:
       - id: luis_app
         name: Get the App Id if the LUIS app already exists
         run: |          
-          appId=$(bf luis:application:list --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} | jq -c '.[] | select(.name | . and contains('\" ${{ needs.terraform.outputs.webapp_name }} \"')) | .id')
+          appId=$(bf luis:application:list --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} | jq -c '.[] | select(.name | . and contains('\"${{ needs.terraform.outputs.webapp_name }}\"')) | .id')
           echo "::set-output name=appid::$appId"    
       - name: Create a LUIS app and assign the prediction key if it doesn't exist
         if: ${{ steps.luis_app.outputs.appid == '' }}
