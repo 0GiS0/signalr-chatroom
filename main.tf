@@ -50,6 +50,16 @@ resource "azurerm_signalr_service" "signalr" {
     value = "Default"
   }
 
+  features {
+    flag  = "EnableConnectivityLogs"
+    value = "False"
+  }
+
+  features {
+    flag  = "EnableMessagingLogs"
+    value = "False"
+  }
+
 }
 
 #CosmosDB
