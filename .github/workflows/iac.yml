@@ -51,8 +51,9 @@ on:
   push:
     branches:
       - main
-  pull_request:
-
+    paths-ignore:
+      - 'LUIS-app/*.lu'
+      - 'LUIS-app/tests/*.json'
 jobs:
   # terraform:
   #   runs-on: ubuntu-latest
