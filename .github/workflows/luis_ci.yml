@@ -6,7 +6,7 @@ name: LUIS-CI
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'LUIS-app/*.lu'
       - 'LUIS-app/tests/*.json'
