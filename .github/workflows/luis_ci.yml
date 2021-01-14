@@ -158,8 +158,8 @@ jobs:
       run: |
           bf luis:application:assignazureaccount --azureSubscriptionId $env:AzureSubscriptionId --appId $env:LUISAppId --accountName $env:luisPredictionResourceName --subscriptionKey $env:LUISAuthoringKey --endpoint $env:LUISAuthoringEndpoint --resourceGroup $env:azureResourceGroup --armToken $(az account get-access-token --query accessToken -o tsv)
       env:
-        luisPredictionResourceName: ${{ LUIS_MASTER_APP_NAME }}-prediction
-        azureResourceGroup: ${{ LUIS_MASTER_APP_NAME }}
+        luisPredictionResourceName: ${{ env.LUIS_MASTER_APP_NAME }}-prediction
+        azureResourceGroup: ${{ env.LUIS_MASTER_APP_NAME }}
 
     - name: Test Luis model
       run: dotnet nlu test -s luisV3 -u $UNIT_TEST_FILE -o results.json
@@ -168,7 +168,7 @@ jobs:
         luisVersionId: ${{ env.LUISAppVersion }}
         luisDirectVersionPublish: true
         luisEndpointKey: ${{ env.LUISPredictionKey }}
-        luisPredictionResourceName: ${{ LUIS_MASTER_APP_NAME }}-prediction
+        luisPredictionResourceName: ${{ env.LUIS_MASTER_APP_NAME }}-prediction
 
     - name: Analyze Unit test results
       run: dotnet nlu compare -e $UNIT_TEST_FILE -a results.json --unit-test --output-folder unittest
@@ -224,21 +224,21 @@ jobs:
 
     - name: Get LUIS authoring key
       run: |
-        keya=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
+        keya=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
         # echo "::set-env name=LUISAuthoringKey::$keya"
         # echo "::add-mask::$keya"
         echo "LUISAuthoringKey=$keya" >> GITHUB_ENV
 
     - name: Get LUIS prediction key
       run: |
-        keyp=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
+        keyp=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
         # echo "::set-env name=LUISPredictionKey::$keyp"
         # echo "::add-mask::$keyp"
          echo "LUISPredictionKey=$keyp" >> GITHUB_ENV
 
     - name: Get LUIS authoring endpoint
       run: |
-        az cognitiveservices account show --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "properties.endpoint" | \
+        az cognitiveservices account show --name ${{ env.LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "properties.endpoint" | \
         xargs -I {} echo "LUISAuthoringEndpoint={}" >> GITHUB_ENV
 
     - uses: actions/setup-node@v1
@@ -279,7 +279,7 @@ jobs:
         luisVersionId: ${{ env.LUISAppVersion }}
         luisDirectVersionPublish: true
         luisEndpointKey: ${{ env.LUISPredictionKey }}
-        luisPredictionResourceName: ${{ LUIS_MASTER_APP_NAME }}
+        luisPredictionResourceName: ${{ env.LUIS_MASTER_APP_NAME }}
 
     - name: download baseline
       if: env.BASELINE_CONTAINER_NAME != ''
