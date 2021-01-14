@@ -60,19 +60,19 @@ jobs:
 
     - name: Get LUIS authoring key
       run: |
-        keya=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
+        keya=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
         echo "::set-env name=LUISAuthoringKey::$keya"
         echo "::add-mask::$keya"
 
     - name: Get LUIS prediction key
       run: |
-        keyp=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
+        keyp=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
         echo "::set-env name=LUISPredictionKey::$keyp"
         echo "::add-mask::$keyp"
 
     - name: Get LUIS authoring endpoint
       run: |
-        az cognitiveservices account show --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "properties.endpoint" | \
+        az cognitiveservices account show --name ${{ env.LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "properties.endpoint" | \
         xargs -I {} echo "LUISAuthoringEndpoint={}" >> $GITHUB_ENV
 
     - uses: actions/setup-node@v1
