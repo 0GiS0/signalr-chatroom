@@ -45,7 +45,7 @@
 name: "Terraform"
 
 env:
-  LU_FILE: Chatroom/Offensive-Intents.lu
+  LU_FILE: LUIS-app/Offensive-Intents.lu
 
 on:
   push:

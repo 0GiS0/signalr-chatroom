@@ -8,6 +8,7 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/luis_ci.yml'
       - 'LUIS-app/*.lu'
       - 'LUIS-app/tests/*.json'
 
@@ -18,11 +19,11 @@ env:
   IS_PRIVATE_REPOSITORY: false
 
   # Set the path to the lu file for your LUIS app
-  LU_FILE: luis-app/model.lu
+  LU_FILE: LUIS-app/Offensive-Intents.lu
   # Set the path to the file for your unit tests
-  UNIT_TEST_FILE: luis-app/tests/unittests.json
+  UNIT_TEST_FILE: LUIS-app/tests/unittests.json
   # Set the path to the file for your unit tests
-  QUALITY_TEST_FILE: luis-app/tests/verificationtests.json
+  QUALITY_TEST_FILE: LUIS-app/tests/verificationtests.json
 
 jobs:
   build:
@@ -50,7 +51,8 @@ jobs:
       uses: gittools/actions/gitversion/execute@6dfe406
 
     - name: LUISAppVersion env
-      run: echo "::set-env name=LUISAppVersion::$GitVersion_SemVer"
+      # run: echo "::set-env name=LUISAppVersion::$GitVersion_SemVer"
+      run: echo "LUISAppVersion=$GitVersion_SemVer" >> $GITHUB_ENV
 
     - uses: azure/login@v1
       with:
@@ -58,20 +60,20 @@ jobs:
 
     - name: Get LUIS authoring key
       run: |
-        keya=$(az cognitiveservices account keys list --name ${{ secrets.AZURE_LUIS_AUTHORING_RESOURCE_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query "key1" | xargs)
+        keya=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
         echo "::set-env name=LUISAuthoringKey::$keya"
         echo "::add-mask::$keya"
 
     - name: Get LUIS prediction key
       run: |
-        keyp=$(az cognitiveservices account keys list --name ${{ secrets.AZURE_LUIS_PREDICTION_RESOURCE_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query "key1" | xargs)
+        keyp=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
         echo "::set-env name=LUISPredictionKey::$keyp"
         echo "::add-mask::$keyp"
 
     - name: Get LUIS authoring endpoint
       run: |
-        az cognitiveservices account show --name ${{ secrets.AZURE_LUIS_AUTHORING_RESOURCE_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query "properties.endpoint" | \
-        xargs -I {} echo "::set-env name=LUISAuthoringEndpoint::{}"
+        az cognitiveservices account show --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "properties.endpoint" | \
+        xargs -I {} echo "LUISAuthoringEndpoint={}" >> $GITHUB_ENV
 
     - uses: actions/setup-node@v1
       with:
@@ -81,7 +83,7 @@ jobs:
       run: npm i -g @microsoft/botframework-cli@4.10.1
 
     - name: Bypass botframework-cli telemetry prompts, enable telemetry collection - set to false to disable telemetry collection
-      run: echo "::set-env name=BF_CLI_TELEMETRY::true"
+      run: echo "BF_CLI_TELEMETRY=true" >> $GITHUB_ENV
 
     - name: Ludown to LUIS model
       run: bf luis:convert -i $LU_FILE -o ./model.json --name 'LUIS CI pipeline - ${{ github.run_id }}' --versionid $LUISAppVersion
@@ -148,15 +150,16 @@ jobs:
     - name: Get Azure subscriptionId
       run: |
         az account show --query 'id' | \
-        xargs -I {} echo "::set-env name=AzureSubscriptionId::{}"
+        # xargs -I {} echo "::set-env name=AzureSubscriptionId::{}"
+        xargs -I {} echo "AzureSubscriptionId={}" >> GITHUB_ENV
 
     - name: Assign LUIS Azure Prediction resource to application
       shell: pwsh
       run: |
           bf luis:application:assignazureaccount --azureSubscriptionId $env:AzureSubscriptionId --appId $env:LUISAppId --accountName $env:luisPredictionResourceName --subscriptionKey $env:LUISAuthoringKey --endpoint $env:LUISAuthoringEndpoint --resourceGroup $env:azureResourceGroup --armToken $(az account get-access-token --query accessToken -o tsv)
       env:
-        luisPredictionResourceName: ${{ secrets.AZURE_LUIS_PREDICTION_RESOURCE_NAME }}
-        azureResourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+        luisPredictionResourceName: ${{ LUIS_MASTER_APP_NAME }}-prediction
+        azureResourceGroup: ${{ LUIS_MASTER_APP_NAME }}
 
     - name: Test Luis model
       run: dotnet nlu test -s luisV3 -u $UNIT_TEST_FILE -o results.json
@@ -165,7 +168,7 @@ jobs:
         luisVersionId: ${{ env.LUISAppVersion }}
         luisDirectVersionPublish: true
         luisEndpointKey: ${{ env.LUISPredictionKey }}
-        luisPredictionResourceName: ${{ secrets.AZURE_LUIS_PREDICTION_RESOURCE_NAME }}
+        luisPredictionResourceName: ${{ LUIS_MASTER_APP_NAME }}-prediction
 
     - name: Analyze Unit test results
       run: dotnet nlu compare -e $UNIT_TEST_FILE -a results.json --unit-test --output-folder unittest
@@ -221,20 +224,22 @@ jobs:
 
     - name: Get LUIS authoring key
       run: |
-        keya=$(az cognitiveservices account keys list --name ${{ secrets.AZURE_LUIS_AUTHORING_RESOURCE_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query "key1" | xargs)
-        echo "::set-env name=LUISAuthoringKey::$keya"
-        echo "::add-mask::$keya"
+        keya=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
+        # echo "::set-env name=LUISAuthoringKey::$keya"
+        # echo "::add-mask::$keya"
+        echo "LUISAuthoringKey=$keya" >> GITHUB_ENV
 
     - name: Get LUIS prediction key
       run: |
-        keyp=$(az cognitiveservices account keys list --name ${{ secrets.AZURE_LUIS_PREDICTION_RESOURCE_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query "key1" | xargs)
-        echo "::set-env name=LUISPredictionKey::$keyp"
-        echo "::add-mask::$keyp"
+        keyp=$(az cognitiveservices account keys list --name ${{ LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
+        # echo "::set-env name=LUISPredictionKey::$keyp"
+        # echo "::add-mask::$keyp"
+         echo "LUISPredictionKey=$keyp" >> GITHUB_ENV
 
     - name: Get LUIS authoring endpoint
       run: |
-        az cognitiveservices account show --name ${{ secrets.AZURE_LUIS_AUTHORING_RESOURCE_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query "properties.endpoint" | \
-        xargs -I {} echo "::set-env name=LUISAuthoringEndpoint::{}"
+        az cognitiveservices account show --name ${{ LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ LUIS_MASTER_APP_NAME }} --query "properties.endpoint" | \
+        xargs -I {} echo "LUISAuthoringEndpoint={}" >> GITHUB_ENV
 
     - uses: actions/setup-node@v1
       with:
@@ -244,20 +249,22 @@ jobs:
       run: npm i -g @microsoft/botframework-cli@4.10.1
 
     - name: Bypass botframework-cli telemetry prompts, enable telemetry collection - set to false to disable telemetry collection
-      run: echo "::set-env name=BF_CLI_TELEMETRY::true"
+      # run: echo "::set-env name=BF_CLI_TELEMETRY::true"
+      run: echo "BF_CLI_TELEMETRY=true" >> GITHUB_ENV
+
 
     - name: Get master LUIS application ID
       run: |
         bf luis:application:list --subscriptionKey $LUISAuthoringKey  --endpoint $LUISAuthoringEndpoint | \
         jq -c '.[] | select(.name | . and contains('\"$LUIS_MASTER_APP_NAME\"')) | .id' | \
-        xargs -I {} echo "::set-env name=LUISAppId::{}"
+        xargs -I {} echo "LUISAppId={}" >> GITHUB_ENV
         echo "Found LUIS app: $LUISAppId"
 
     - name: Get LUIS latest version ID
       run: |
         bf luis:version:list --appId $LUISAppId --endpoint $LUISAuthoringEndpoint --subscriptionKey $LUISAuthoringKey  --take 1 | \
         jq '.[0].version' | \
-        xargs -I {} echo "::set-env name=LUISAppVersion::{}"
+        xargs -I {} echo "LUISAppVersion={}" >> GITHUB_ENV
 
     - name: Install dotnet-nlu
       run: dotnet tool install -g dotnet-nlu --version 0.7.5
@@ -272,7 +279,7 @@ jobs:
         luisVersionId: ${{ env.LUISAppVersion }}
         luisDirectVersionPublish: true
         luisEndpointKey: ${{ env.LUISPredictionKey }}
-        luisPredictionResourceName: ${{ secrets.AZURE_LUIS_PREDICTION_RESOURCE_NAME }}
+        luisPredictionResourceName: ${{ LUIS_MASTER_APP_NAME }}
 
     - name: download baseline
       if: env.BASELINE_CONTAINER_NAME != ''
