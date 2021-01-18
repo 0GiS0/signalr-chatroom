@@ -2,9 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var videoPlayer = amp("azuremediaplayer");
 
-    // console.log("player:");
-    // console.dir(videoPlayer);
-
     function generateRandomName() {
         return Math.random().toString(36).substring(2, 10);
     }
