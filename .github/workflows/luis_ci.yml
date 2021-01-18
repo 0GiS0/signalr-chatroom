@@ -52,6 +52,8 @@ jobs:
       - name: Use GitVersion v0.9.3
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0.9.7
+        with:
+          useConfigFile: true
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
