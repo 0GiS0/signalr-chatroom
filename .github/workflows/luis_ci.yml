@@ -68,14 +68,12 @@ jobs:
       - name: Get LUIS authoring key
         run: |
           keya=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
-          echo "::set-env name=LUISAuthoringKey::$keya"
-          echo "::add-mask::$keya"
+          echo "LUISAuthoringKey=$keya" >> $GITHUB_ENV
 
       - name: Get LUIS prediction key
         run: |
           keyp=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
-          echo "::set-env name=LUISPredictionKey::$keyp"
-          echo "::add-mask::$keyp"
+          echo "LUISPredictionKey=$keyp" >> $GITHUB_ENV
 
       - name: Get LUIS authoring endpoint
         run: |
@@ -101,7 +99,7 @@ jobs:
           bf luis:application:create --name $LUIS_MASTER_APP_NAME --subscriptionKey $LUISAuthoringKey  --endpoint $LUISAuthoringEndpoint --versionId=0.1
           bf luis:application:list --subscriptionKey $LUISAuthoringKey  --endpoint $LUISAuthoringEndpoint | \
           jq -c '.[] | select(.name | . and contains('\"$LUIS_MASTER_APP_NAME\"')) | .id' | \
-          xargs -I {} echo "::set-env name=LUISAppId::{}"
+          xargs -I {} echo "LUISAppId={}" >> $GITHUB_ENV
 
       # Check that we found the master app Id - failure probably indicates misconfiguration
       - name: Validate application ID
@@ -157,7 +155,6 @@ jobs:
       - name: Get Azure subscriptionId
         run: |
           az account show --query 'id' | \
-          # xargs -I {} echo "::set-env name=AzureSubscriptionId::{}"
           xargs -I {} echo "AzureSubscriptionId={}" >> GITHUB_ENV
 
       - name: Assign LUIS Azure Prediction resource to application
@@ -232,16 +229,12 @@ jobs:
       - name: Get LUIS authoring key
         run: |
           keya=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-authoring --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
-          # echo "::set-env name=LUISAuthoringKey::$keya"
-          # echo "::add-mask::$keya"
           echo "LUISAuthoringKey=$keya" >> GITHUB_ENV
 
       - name: Get LUIS prediction key
         run: |
           keyp=$(az cognitiveservices account keys list --name ${{ env.LUIS_MASTER_APP_NAME }}-prediction --resource-group ${{ env.LUIS_MASTER_APP_NAME }} --query "key1" | xargs)
-          # echo "::set-env name=LUISPredictionKey::$keyp"
-          # echo "::add-mask::$keyp"
-           echo "LUISPredictionKey=$keyp" >> GITHUB_ENV
+          echo "LUISPredictionKey=$keyp" >> GITHUB_ENV
 
       - name: Get LUIS authoring endpoint
         run: |
