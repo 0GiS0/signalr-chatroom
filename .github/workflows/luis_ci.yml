@@ -85,7 +85,7 @@ jobs:
           node-version: "12.x"
 
       - name: Install botframework-cli
-        run: npm i -g @microsoft/botframework-cli@4.10.1
+        run: npm i -g @microsoft/botframework-cli
 
       - name: Bypass botframework-cli telemetry prompts, enable telemetry collection - set to false to disable telemetry collection
         run: echo "BF_CLI_TELEMETRY=true" >> $GITHUB_ENV
