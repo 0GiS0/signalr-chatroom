@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	var connection = new signalR.HubConnectionBuilder()
-        .withUrl('https://included-jackass.azurewebsites.net/chat')        
+        .withUrl(`${CHATROOM_URL}/chat`)        
 		.build();
 	bindConnectionMessage(connection);
 	connection

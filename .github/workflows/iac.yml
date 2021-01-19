@@ -106,12 +106,13 @@ jobs:
         with:
           app-name: ${{ needs.terraform.outputs.webapp_name }}
           package: ./webapp
-      - name: See the storage connection
-        run: echo ${{ needs.terraform.outputs.storage }}
+      - name: Prepend Chatroom URL to the index.js 
+        run: |
+         echo -e "const CHATROOM_URL=https://${{ webapp_name }}.azurewebsites.net\n$(cat Chat/js/index.js)" > Chat/js/index.js
+         cat Chat/js/index.js
       - name: Copy static web into the Azure Storage      
         uses: azure/CLI@v1
         with:
           azcliversion: 2.0.72
           inlineScript: |
             az storage blob upload-batch --account-name ${{ needs.terraform.outputs.storage }} -d '$web' -s ./Chat
-
