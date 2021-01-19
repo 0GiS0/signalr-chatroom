@@ -105,6 +105,9 @@ jobs:
         with:
           app-name: ${{ needs.terraform.outputs.webapp_name }}
           package: ./webapp
+      - name: 'See the Azure Storage Account connection string'
+        run: |
+          echo ${{ needs.terraform.outputs.storage_connection }}
       - name: Copy static web into the Azure Storage
         uses: bacongobbler/azure-blob-storage-upload@v1.1.1
         with:
