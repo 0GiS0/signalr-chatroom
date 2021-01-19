@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       webapp_name: ${{ steps.tf_output.outputs.webapp }}
-      storage_connection: ${{ steps.tf_outputs.outputs.storageconnection }}
+      storage: ${{ steps.tf_outputs.outputs.connection }}
       luis_auth_endpoint: ${{ steps.tf_output.outputs.luisendpoint }}
       luis_key: ${{ steps.tf_output.outputs.luiskey }}
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
@@ -49,7 +49,7 @@ jobs:
           echo "::set-output name=webapp::$(terraform output -raw app_service_name)"
           echo "::set-output name=luisendpoint::$(terraform output -raw luis_authoring_endpoint)"
           echo "::set-output name=luiskey::$(terraform output -raw luis_authoring_key)"
-          echo "::set-output name=storageconnection::$(terraform output -raw storage_connection)"
+          echo "::set-output name=connection::$(terraform output storage_connection)"
   luis:
     name: "LUIS model"
     needs: [terraform]
@@ -106,11 +106,11 @@ jobs:
           app-name: ${{ needs.terraform.outputs.webapp_name }}
           package: ./webapp
       - name: See the storage connection
-        run: echo ${{ needs.terraform.outputs.storage_connection }}
+        run: echo ${{ needs.terraform.outputs.storage }}
       - name: Copy static web into the Azure Storage
         uses: bacongobbler/azure-blob-storage-upload@v1.1.1
         with:
           source_dir: Chat
           container_name: $web
-          connection_string: ${{ needs.terraform.outputs.storage_connection }}
+          connection_string: ${{ needs.terraform.outputs.storage }}
           sync: true
