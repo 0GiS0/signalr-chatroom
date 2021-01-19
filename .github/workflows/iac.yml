@@ -1,47 +1,3 @@
-# This workflow installs the latest version of Terraform CLI and configures the Terraform CLI configuration file
-# with an API token for Terraform Cloud (app.terraform.io). On pull request events, this workflow will run
-# `terraform init`, `terraform fmt`, and `terraform plan` (speculative plan via Terraform Cloud). On push events
-# to the main branch, `terraform apply` will be executed.
-#
-# Documentation for `hashicorp/setup-terraform` is located here: https://github.com/hashicorp/setup-terraform
-#
-# To use this workflow, you will need to complete the following setup steps.
-#
-# 1. Create a `main.tf` file in the root of this repository with the `remote` backend and one or more resources defined.
-#   Example `main.tf`:
-#     # The configuration for the `remote` backend.
-#     terraform {
-#       backend "remote" {
-#         # The name of your Terraform Cloud organization.
-#         organization = "example-organization"
-#
-#         # The name of the Terraform Cloud workspace to store Terraform state files in.
-#         workspaces {
-#           name = "example-workspace"
-#         }
-#       }
-#     }
-#
-#     # An example resource that does nothing.
-#     resource "null_resource" "example" {
-#       triggers = {
-#         value = "A example resource that does nothing!"
-#       }
-#     }
-#
-#
-# 2. Generate a Terraform Cloud user API token and store it as a GitHub secret (e.g. TF_API_TOKEN) on this repository.
-#   Documentation:
-#     - https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
-#     - https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
-#
-# 3. Reference the GitHub secret in step using the `hashicorp/setup-terraform` GitHub Action.
-#   Example:
-#     - name: Setup Terraform
-#       uses: hashicorp/setup-terraform@v1
-#       with:
-#         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
 name: "Terraform"
 
 env:
@@ -52,27 +8,15 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'LUIS-app/*.lu'
-      - 'LUIS-app/tests/*.json'
+      - "LUIS-app/*.lu"
+      - "LUIS-app/tests/*.json"
 jobs:
-  # terraform:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     webapp_name: ${{ steps.tf_output.outputs.url }} # map step output to job output
-  #   steps:
-  #     - id: tf_output
-  #       name: send url to other job
-  #       run: echo "::set-output name=url::https://google.com"
-  # job2:
-  #   runs-on: ubuntu-latest
-  #   needs: terraform
-  #   steps:
-  #     - run: echo ${{ needs.terraform.outputs.webapp_name }} # grab job output here
   terraform:
     name: "Terraform"
     runs-on: ubuntu-latest
     outputs:
       webapp_name: ${{ steps.tf_output.outputs.webapp }}
+      storage_connection: ${{ steps.tf_outputs.storageconnection }}
       luis_auth_endpoint: ${{ steps.tf_output.outputs.luisendpoint }}
       luis_key: ${{ steps.tf_output.outputs.luiskey }}
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
@@ -92,9 +36,6 @@ jobs:
       # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform Init
         run: terraform init
-      # Checks that all Terraform configuration files adhere to a canonical format
-      # - name: Terraform Format
-      #   run: terraform fmt -check
       # Generates an execution plan for Terraform
       - name: Terraform Plan
         run: terraform plan
@@ -108,6 +49,7 @@ jobs:
           echo "::set-output name=webapp::$(terraform output -raw app_service_name)"
           echo "::set-output name=luisendpoint::$(terraform output -raw luis_authoring_endpoint)"
           echo "::set-output name=luiskey::$(terraform output -raw luis_authoring_key)"
+          echo "::set-output name=storageconnection::$(terraform output -raw storage_connection)"
   luis:
     name: "LUIS model"
     needs: [terraform]
@@ -129,9 +71,9 @@ jobs:
           npm i -g @microsoft/botframework-cli
       - id: luis_app
         name: Get the App Id if the LUIS app already exists
-        run: |          
+        run: |
           appId=$(bf luis:application:list --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} | jq -c '.[] | select(.name | . and contains('\"${{ needs.terraform.outputs.webapp_name }}\"')) | .id')
-          echo "::set-output name=appid::$appId"    
+          echo "::set-output name=appid::$appId"
       - name: if it doesn't exist, create a LUIS app, assign the prediction key, import the last version of the model, train and publish
         if: ${{ steps.luis_app.outputs.appid == '' }}
         run: |
@@ -161,5 +103,12 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ needs.terraform.outputs.webapp_name }} #This should be an output from Terraform job
+          app-name: ${{ needs.terraform.outputs.webapp_name }}
           package: ./webapp
+      - name: Copy static web into the Azure Storage
+        uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+        with:
+          source_dir: Chat
+          container_name: $web
+          connection_string: ${{ needs.terraform.outputs.storage_connection }}
+          sync: true

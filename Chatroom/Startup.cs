@@ -63,7 +63,8 @@ namespace chatroom
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<Chat>("/chat");
-            });
+                
+            }).UseCors();
         }
     }
 }

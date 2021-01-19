@@ -25,7 +25,6 @@ resource "random_pet" "service" {
 
 #Resource Group
 resource "azurerm_resource_group" "rg" {
-  # name     = "signalr-chatroom"
   name     = random_pet.service.id
   location = var.location
 }
@@ -157,6 +156,24 @@ resource "azurerm_application_insights" "appinsights" {
   application_type    = "web"
 }
 
+#Azure Storage for the static website (Chat)
+resource "azurerm_storage_account" "staticweb" {
+  name                     = replace(random_pet.service.id, "-", "")
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  account_kind             = "StorageV2"
+
+  static_website {
+    index_document = "index.html"
+  }
+}
+
+output "storage_connection" {
+  value = azurerm_storage_account.staticweb.primary_connection_string
+}
+
 #App Service
 #Plan
 resource "azurerm_app_service_plan" "appserviceplan" {
@@ -169,6 +186,7 @@ resource "azurerm_app_service_plan" "appserviceplan" {
     size = "F1"
   }
 }
+
 #Web App
 resource "azurerm_app_service" "webapp" {
   name                = random_pet.service.id
@@ -176,7 +194,13 @@ resource "azurerm_app_service" "webapp" {
   resource_group_name = azurerm_resource_group.rg.name
   app_service_plan_id = azurerm_app_service_plan.appserviceplan.id
 
-  #https://docs.microsoft.com/es-es/azure/app-service/configure-common#add-or-edit
+  site_config {
+    cors {
+      allowed_origins     = ["*"]
+      support_credentials = false
+    }
+  }
+
   app_settings = {
     "Azure:SignalR:ConnectionString" = azurerm_signalr_service.signalr.primary_connection_string
     "CosmosDb:Account"               = azurerm_cosmosdb_account.cosmosdbaccount.endpoint
@@ -195,4 +219,3 @@ resource "azurerm_app_service" "webapp" {
 output "app_service_name" {
   value = azurerm_app_service.webapp.name
 }
-
