@@ -170,8 +170,8 @@ resource "azurerm_storage_account" "staticweb" {
   }
 }
 
-output "storage_connection" {
-  value = azurerm_storage_account.staticweb.primary_connection_string
+output "storage" {
+  value = azurerm_storage_account.staticweb.name
 }
 
 #App Service
