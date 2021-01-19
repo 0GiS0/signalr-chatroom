@@ -194,12 +194,12 @@ resource "azurerm_app_service" "webapp" {
   resource_group_name = azurerm_resource_group.rg.name
   app_service_plan_id = azurerm_app_service_plan.appserviceplan.id
 
-  site_config {
-    cors {
-      allowed_origins     = [azurerm_storage_account.staticweb.primary_web_endpoint]
-      support_credentials = false
-    }
-  }
+  # site_config {
+  #   cors {
+  #     allowed_origins     = [azurerm_storage_account.staticweb.primary_web_endpoint]
+  #     support_credentials = false
+  #   }
+  # }
 
   app_settings = {
     "Azure:SignalR:ConnectionString" = azurerm_signalr_service.signalr.primary_connection_string
