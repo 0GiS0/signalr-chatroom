@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       webapp_name: ${{ steps.tf_output.outputs.webapp }}
-      storage_connection: ${{ steps.tf_outputs.storageconnection }}
+      storage_connection: ${{ steps.tf_outputs.outputs.storageconnection }}
       luis_auth_endpoint: ${{ steps.tf_output.outputs.luisendpoint }}
       luis_key: ${{ steps.tf_output.outputs.luiskey }}
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
@@ -105,9 +105,6 @@ jobs:
         with:
           app-name: ${{ needs.terraform.outputs.webapp_name }}
           package: ./webapp
-      - name: 'See the Azure Storage Account connection string'
-        run: |
-          echo ${{ needs.terraform.outputs.storage_connection }}
       - name: Copy static web into the Azure Storage
         uses: bacongobbler/azure-blob-storage-upload@v1.1.1
         with:
