@@ -108,7 +108,7 @@ jobs:
           package: ./webapp
       - name: Prepend Chatroom URL to the index.js 
         run: |
-         echo -e "const CHATROOM_URL="https://${{ needs.terraform.outputs.webapp_name }}.azurewebsites.net";\n$(cat Chat/js/index.js)" > Chat/js/index.js 
+         echo -e "const CHATROOM_URL='https://${{ needs.terraform.outputs.webapp_name }}.azurewebsites.net';\n$(cat Chat/js/index.js)" > Chat/js/index.js 
          cat Chat/js/index.js
       - name: Copy static web into the Azure Storage      
         uses: azure/CLI@v1
