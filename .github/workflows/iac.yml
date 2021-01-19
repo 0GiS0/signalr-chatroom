@@ -109,10 +109,15 @@ jobs:
       - name: See the storage connection
         run: echo ${{ needs.terraform.outputs.storage }}
       - name: Copy static web into the Azure Storage
-        uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+        # uses: bacongobbler/azure-blob-storage-upload@v1.1.1
+        # with:
+        #   source_dir: 'Chat'
+        #   container_name: '$web'
+        #   connection_string: ${{ needs.terraform.outputs.storage }}
+        #   extra_args: --destination-path test
+        #   sync: true
+        uses: tibor19/static-website-deploy@v1
         with:
-          source_dir: 'Chat'
-          container_name: '$web'
-          connection_string: ${{ needs.terraform.outputs.storage }}
-          extra_flags: --destination-path test
-          sync: true
+          enabled-static-website: 'true'
+          folder: 'Chat'
+          connection-string: ${{ needs.terraform.outputs.storage }}
