@@ -19,7 +19,6 @@ jobs:
       storage: ${{ steps.tf_output.outputs.storage }}
       luis_auth_endpoint: ${{ steps.tf_output.outputs.luisendpoint }}
       luis_key: ${{ steps.tf_output.outputs.luiskey }}
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
