@@ -195,10 +195,10 @@ resource "azurerm_app_service" "webapp" {
   app_service_plan_id = azurerm_app_service_plan.appserviceplan.id
 
   site_config {
-    cors {
-      allowed_origins     = ["*"]
-      support_credentials = false
-    }
+    # cors {
+    #   allowed_origins     = ["*"]
+    #   support_credentials = false
+    # }
   }
 
   app_settings = {
