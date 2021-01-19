@@ -108,11 +108,11 @@ jobs:
           package: ./webapp
       - name: See the storage connection
         run: echo ${{ needs.terraform.outputs.storage }}
-      - uses: chabad360/hugo-actions@master
       - name: Copy static web into the Azure Storage
         uses: bacongobbler/azure-blob-storage-upload@v1.1.1
         with:
           source_dir: 'Chat'
           container_name: '$web'
           connection_string: ${{ needs.terraform.outputs.storage }}
+          extra_flags: --destination-path test
           sync: true
