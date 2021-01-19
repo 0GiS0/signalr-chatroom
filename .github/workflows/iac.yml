@@ -111,7 +111,7 @@ jobs:
       - name: Copy static web into the Azure Storage
         uses: bacongobbler/azure-blob-storage-upload@v1.1.1
         with:
-          source_dir: Chat
-          container_name: $web
+          source_dir: 'Chat'
+          container_name: '$web'
           connection_string: ${{ needs.terraform.outputs.storage }}
           sync: true
