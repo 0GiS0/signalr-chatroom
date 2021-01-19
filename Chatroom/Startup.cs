@@ -64,7 +64,7 @@ namespace chatroom
             {
                 endpoints.MapHub<Chat>("/chat");
                 
-            }).UseCors();
+            });
         }
     }
 }
