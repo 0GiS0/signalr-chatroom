@@ -69,6 +69,7 @@ public class Chat : Hub
                 queryString["show-all-intents"] = "true";
                 queryString["staging"] = "false";
                 queryString["timezoneOffset"] = "0";
+                queryString["log"] = "true";
 
                 var predictionEndpointUri = String.Format("{0}luis/prediction/v3.0/apps/{1}/slots/production/predict?{2}", _luisConfiguration.Value.PredictionEndpoint, _luisConfiguration.Value.AppId, queryString);
 
