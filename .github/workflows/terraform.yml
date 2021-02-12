@@ -85,7 +85,8 @@ jobs:
           bf luis:version:import --appId $appId --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json --versionId 0.2
           bf luis:train:run --appId $appId --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --wait
           bf luis:application:publish --appId $appId --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}
-          az webapp config appsettings set -g ${{ needs.terraform.outputs.webapp_name }} -n ${{ needs.terraform.outputs.webapp_name }} --settings LUIS:AppId=$appId
+      - name: Update LUIS id for the web app
+          az webapp config appsettings set -g ${{ needs.terraform.outputs.webapp_name }} -n ${{ needs.terraform.outputs.webapp_name }} --settings LUIS:AppId=${{ steps.luis_app.outputs.appid }}
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
@@ -106,11 +107,11 @@ jobs:
         with:
           app-name: ${{ needs.terraform.outputs.webapp_name }}
           package: ./webapp
-      - name: Prepend Chatroom URL to the index.js 
+      - name: Prepend Chatroom URL to the index.js
         run: |
-         echo -e "const CHATROOM_URL='https://${{ needs.terraform.outputs.webapp_name }}.azurewebsites.net';\n$(cat Chat/js/index.js)" > Chat/js/index.js 
-         cat Chat/js/index.js
-      - name: Copy static web into the Azure Storage      
+          echo -e "const CHATROOM_URL='https://${{ needs.terraform.outputs.webapp_name }}.azurewebsites.net';\n$(cat Chat/js/index.js)" > Chat/js/index.js 
+          cat Chat/js/index.js
+      - name: Copy static web into the Azure Storage
         uses: azure/CLI@v1
         with:
           azcliversion: 2.0.72

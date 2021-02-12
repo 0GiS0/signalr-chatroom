@@ -207,8 +207,7 @@ resource "azurerm_app_service" "webapp" {
     "CosmosDb:Key"                   = azurerm_cosmosdb_account.cosmosdbaccount.primary_key
     "CosmosDb:DatabaseName"          = var.cosmosdb_db
     "CosmosDb:ContainerName"         = var.cosmosdb_container
-    "LUIS:PredictionEndpoint"        = azurerm_cognitive_account.luis.endpoint
-    # "LUIS:AppId"                     = var.luis_app_id
+    "LUIS:PredictionEndpoint"        = azurerm_cognitive_account.luis.endpoint    
     "LUIS:ApiKey"                    = azurerm_cognitive_account.luis.primary_access_key
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.appinsights.instrumentation_key
     "ContentModerator:Endpoint"      = azurerm_cognitive_account.content_moderator.endpoint
