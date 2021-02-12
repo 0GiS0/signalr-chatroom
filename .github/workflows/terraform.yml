@@ -86,7 +86,7 @@ jobs:
           bf luis:train:run --appId $appId --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --wait
           bf luis:application:publish --appId $appId --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}
       - name: Update LUIS id for the web app
-          az webapp config appsettings set -g ${{ needs.terraform.outputs.webapp_name }} -n ${{ needs.terraform.outputs.webapp_name }} --settings LUIS:AppId=${{ steps.luis_app.outputs.appid }}
+        run:  az webapp config appsettings set -g ${{ needs.terraform.outputs.webapp_name }} -n ${{ needs.terraform.outputs.webapp_name }} --settings LUIS:AppId=${{ steps.luis_app.outputs.appid }}
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
