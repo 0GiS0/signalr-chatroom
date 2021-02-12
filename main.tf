@@ -10,7 +10,7 @@ terraform {
     organization = "returngis"
     workspaces {
       name = "signalr-chatroom"
-    }
+    }  
   }
 }
 

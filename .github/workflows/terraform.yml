@@ -10,6 +10,7 @@ on:
     paths-ignore:
       - "LUIS-app/*.lu"
       - "LUIS-app/tests/*.json"
+  workflow_dispatch:
 jobs:
   terraform:
     name: "Terraform"
