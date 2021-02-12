@@ -74,6 +74,7 @@ jobs:
         name: Get the App Id if the LUIS app already exists
         run: |
           appId=$(bf luis:application:list --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} | jq -c '.[] | select(.name | . and contains('\"${{ needs.terraform.outputs.webapp_name }}\"')) | .id')
+          az webapp config appsettings set -g ${{ needs.terraform.outputs.webapp_name }} -n ${{ needs.terraform.outputs.webapp_name }} --settings LUIS:AppId=$appId
           echo "::set-output name=appid::$appId"
       - name: if it doesn't exist, create a LUIS app, assign the prediction key, import the last version of the model, train and publish
         if: ${{ steps.luis_app.outputs.appid == '' }}
@@ -84,9 +85,7 @@ jobs:
           bf luis:convert -i $LU_FILE -o ./model.json --name ${{ needs.terraform.outputs.webapp_name }}
           bf luis:version:import --appId $appId --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}  --in model.json --versionId 0.2
           bf luis:train:run --appId $appId --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }} --wait
-          bf luis:application:publish --appId $appId --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}
-      - name: Update LUIS id for the web app
-        run:  az webapp config appsettings set -g ${{ needs.terraform.outputs.webapp_name }} -n ${{ needs.terraform.outputs.webapp_name }} --settings LUIS:AppId=${{ steps.luis_app.outputs.appid }}
+          bf luis:application:publish --appId $appId --versionId 0.2 --endpoint ${{ needs.terraform.outputs.luis_auth_endpoint }} --subscriptionKey ${{ needs.terraform.outputs.luis_key }}     
   deployment:
     name: "Deploy code"
     needs: [terraform, luis]
