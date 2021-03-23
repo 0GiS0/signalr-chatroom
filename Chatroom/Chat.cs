@@ -94,7 +94,7 @@ public class Chat : Hub
                     Clients.Client(Context.ConnectionId).SendAsync("echo", name, "[PRIVADO] Este tipo de mensajes no están permitidos", currentTime, false, null, true);
                 else
                     //Clients is an interface that gives you access to all connected clients
-                    Clients.All.SendAsync("broadcastMessage", name, message, currentTime);
+                    Clients.All.SendAsync("broadcastMessage", name, message, currentTime, false, null);
 
             }
 
