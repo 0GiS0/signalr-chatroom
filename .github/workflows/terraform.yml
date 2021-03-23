@@ -100,8 +100,8 @@ jobs:
           dotnet-version: "3.1.x"
       - run: |
           dotnet restore
-          dotnet build ./Chatroom -c Release
-          dotnet publish ./Chatroom -c Release -o './webapp'
+          dotnet build ./Chatroom -c Debug
+          dotnet publish ./Chatroom -c Debug -o './webapp'
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
