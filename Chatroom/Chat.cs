@@ -50,7 +50,7 @@ public class Chat : Hub
                 }
 
                 //Clients is an interface that gives you access to all connected clients
-                Clients.All.SendAsync("broadcastMessage", name, message, currentTime, ugly, terms);
+                Clients.All.SendAsync(nameof(BroadcastMessage), name, message, currentTime, ugly, terms);
             }
             else
             { //but if content moderator says it's ok I'll do a double check with LUIS
@@ -91,10 +91,10 @@ public class Chat : Hub
 
                 if (data.prediction.topIntent == "Offensive")
                     //Clients is an interface that gives you access to all connected clients
-                    Clients.Client(Context.ConnectionId).SendAsync("echo", name, "[PRIVADO] Este tipo de mensajes no están permitidos", currentTime, false, null, true);
+                    Clients.Client(Context.ConnectionId).SendAsync(nameof(Echo), name, "[PRIVADO] Este tipo de mensajes no están permitidos", currentTime, false, null, true);
                 else
                     //Clients is an interface that gives you access to all connected clients
-                    Clients.All.SendAsync("broadcastMessage", name, message, currentTime, false, null);
+                    Clients.All.SendAsync(nameof(BroadcastMessage), name, message, currentTime, ugly, terms);
 
             }
 
@@ -121,6 +121,6 @@ public class Chat : Hub
     //Sends the message back to the caller
     public void Echo(string name, string message)
     {
-        Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
+        Clients.Client(Context.ConnectionId).SendAsync(nameof(Echo), name, message + " (echo from server)");
     }
 }
